@@ -1,0 +1,11 @@
+{
+  "name": "MATHAMOTA",
+  "short_name": "MATHAMOTA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08111f",
+  "theme_color": "#08111f",
+  "description": "Private two-person chat space with installable PWA support.",
+  "icons": []
+}
+

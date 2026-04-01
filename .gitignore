@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+.env
+.env.local
+.DS_Store
+coverage
+apps/api/storage/uploads
+apps/api/storage/db.sqlite
+apps/api/storage/db.sqlite-shm
+apps/api/storage/db.sqlite-wal
+*.log
+
