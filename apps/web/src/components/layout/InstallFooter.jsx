@@ -12,7 +12,7 @@ export default function InstallFooter() {
   }
 
   return (
-    <footer className="border-t border-border-soft bg-white px-4 py-3">
+    <footer className="glass-surface border-t border-border-soft px-4 py-3">
       <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-3 text-center text-sm text-text-muted md:flex-row">
         <div className="flex items-center gap-3">
           <img src="/logo.svg" alt="logo" className="h-9 w-9" />
@@ -26,7 +26,7 @@ export default function InstallFooter() {
             type="button"
             onClick={handleInstall}
             disabled={!installPromptEvent}
-            className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Smartphone className="h-4 w-4" />
             Install app
@@ -34,7 +34,7 @@ export default function InstallFooter() {
           <a
             href={apkUrl || "#"}
             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
-              apkUrl ? "bg-slate-900 text-white" : "pointer-events-none bg-slate-200 text-slate-500"
+              apkUrl ? "bg-gradient-to-r from-rose-900 to-red-900 text-white" : "pointer-events-none bg-slate-200 text-slate-500"
             }`}
           >
             <Download className="h-4 w-4" />

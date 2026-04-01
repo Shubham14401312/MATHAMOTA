@@ -19,6 +19,8 @@ import {
   getAdminOverview,
   getChatState,
   getMessages,
+  getMessagesByUserId,
+  getOrCreateDirectChatByUsers,
   getPrimaryChatByUserId,
   getUserByEmail,
   getUserById,
@@ -263,6 +265,83 @@ app.post("/chat/:chatId/upload", auth, upload.single("file"), (req, res) => {
   return res.json(message);
 });
 
+app.post("/messages", (req, res) => {
+  const senderId = String(req.body?.sender_ID || "");
+  const receiverId = String(req.body?.reciever_ID || "");
+  const type = String(req.body?.type || "text");
+  const text = String(req.body?.text || "");
+  const mediaObject = req.body?.media_object || null;
+  const document = req.body?.document || null;
+  const requestedChatId = String(req.body?.chatId || "");
+
+  if (!senderId || !receiverId) {
+    return res.status(400).json({ error: "sender_ID and reciever_ID are required." });
+  }
+
+  let chatId = requestedChatId;
+  if (!chatId) {
+    chatId = getOrCreateDirectChatByUsers(senderId, receiverId).id;
+  }
+
+  const message = insertMessage({
+    chatId,
+    senderId,
+    receiverId,
+    kind: type,
+    body: text,
+    attachmentUrl: mediaObject?.url || null,
+    attachmentName: mediaObject?.name || document || null,
+    media_object: mediaObject,
+    document,
+    status: "sent"
+  });
+
+  io.to(chatId).emit("message:new", message);
+  return res.json({
+    ok: true,
+    chatId,
+    messageId: message.id
+  });
+});
+
+app.get("/messages/:userId", (req, res) => {
+  return res.json(getMessagesByUserId(req.params.userId));
+});
+
+app.post("/v1/media", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "File is required." });
+  }
+
+  const ext = path.extname(req.file.originalname);
+  const finalName = `${uuid()}${ext}`;
+  const finalPath = path.join(config.uploadDir, finalName);
+  fs.renameSync(req.file.path, finalPath);
+
+  return res.json({
+    ok: true,
+    file_id: finalName,
+    id: finalName,
+    url: `${config.publicAppUrl.replace(/\/$/, "")}/v1/media/public/${finalName}`
+  });
+});
+
+app.get("/v1/media/:userId/:fileId", (req, res) => {
+  const filePath = path.join(config.uploadDir, req.params.fileId);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "File not found." });
+  }
+  return res.sendFile(filePath);
+});
+
+app.get("/v1/media/public/:fileId", (req, res) => {
+  const filePath = path.join(config.uploadDir, req.params.fileId);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "File not found." });
+  }
+  return res.sendFile(filePath);
+});
+
 app.post("/auth/admin", (req, res) => {
   const email = String(req.body?.email || "");
   const password = String(req.body?.password || "");
@@ -301,7 +380,14 @@ app.get("*", (req, res, next) => {
 io.use((socket, next) => {
   try {
     const token = socket.handshake.auth?.token;
-    socket.data.user = jwt.verify(token, config.jwtSecret);
+    if (token) {
+      socket.data.user = jwt.verify(token, config.jwtSecret);
+      return next();
+    }
+    socket.data.user = {
+      sub: String(socket.handshake.query?.userId || "guest-user"),
+      name: String(socket.handshake.query?.name || "Partner")
+    };
     next();
   } catch {
     next(new Error("Unauthorized"));
@@ -311,8 +397,18 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   socket.on("room:join", ({ chatId }) => {
     const chatState = getChatState(chatId, socket.data.user.sub);
-    if (!chatState) return;
     socket.join(chatId);
+    if (!chatState) {
+      socket.emit("room:snapshot", {
+        chat: { id: chatId, title: "Private chat" },
+        inviteCode: "",
+        participants: {},
+        role: "guest",
+        messages: [],
+        ludo: null
+      });
+      return;
+    }
     syncLudoPlayers(chatState);
     socket.emit("room:snapshot", {
       ...chatState,

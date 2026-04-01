@@ -104,6 +104,33 @@ export function getPrimaryChatByUserId(userId) {
   return state.chats.find((chat) => chat.owner_id === userId || chat.partner_id === userId) || null;
 }
 
+export function getOrCreateDirectChatByUsers(userA, userB) {
+  const state = readState();
+  let chat = state.chats.find((item) => {
+    return (
+      (item.owner_id === userA && item.partner_id === userB) ||
+      (item.owner_id === userB && item.partner_id === userA)
+    );
+  });
+
+  if (!chat) {
+    chat = {
+      id: uuid(),
+      inviteCode: cryptoCode(),
+      owner_id: userA,
+      partner_id: userB,
+      title: "Private chat",
+      wallpaper: "blush",
+      gallery_visible: 1,
+      created_at: now()
+    };
+    state.chats.push(chat);
+    writeState(state);
+  }
+
+  return chat;
+}
+
 export function createChat({ ownerId, title }) {
   const state = readState();
   const existing = state.chats.find((chat) => chat.owner_id === ownerId);
@@ -171,6 +198,36 @@ export function getMessages(chatId) {
   return state.messages
     .filter((message) => message.chatId === chatId)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+export function getMessagesByUserId(userId) {
+  const state = readState();
+  const chatIds = new Set(
+    state.chats
+      .filter((chat) => chat.owner_id === userId || chat.partner_id === userId)
+      .map((chat) => chat.id)
+  );
+
+  return state.messages
+    .filter((message) => chatIds.has(message.chatId))
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((message) => ({
+      message_ID: message.id,
+      chatId: message.chatId,
+      sender_ID: message.senderId,
+      reciever_ID: message.receiverId,
+      type: message.kind || "text",
+      text: message.body || "",
+      media_object: message.attachmentUrl
+        ? {
+            url: message.attachmentUrl,
+            name: message.attachmentName || message.kind
+          }
+        : message.media_object || null,
+      document: message.attachmentName || message.document || null,
+      status: message.status || "delivered",
+      timestamp: message.createdAt
+    }));
 }
 
 export function insertMessage(message) {

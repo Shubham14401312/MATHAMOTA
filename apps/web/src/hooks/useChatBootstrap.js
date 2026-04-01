@@ -50,8 +50,11 @@ export function useChatBootstrap() {
     initialize,
     appendMessage,
     updateMessageStatus,
+    setSocketSend,
     setSocketState,
-    setError
+    setError,
+    setTyping,
+    clearTyping
   } = useChatStore();
 
   useEffect(() => {
@@ -96,14 +99,21 @@ export function useChatBootstrap() {
           if (payload.type === "message:receipt" && payload.chatId && payload.messageId) {
             updateMessageStatus(payload.chatId, payload.messageId, payload.status);
           }
+          if (payload.type === "typing" && payload.chatId) {
+            setTyping(payload.chatId, payload.name || "Someone");
+            window.clearTimeout(window.__mathamotaTypingTimeout);
+            window.__mathamotaTypingTimeout = window.setTimeout(() => clearTyping(payload.chatId), 1800);
+          }
         }
       });
+      setSocketSend((payload) => activeSocket?.send(payload));
     }
 
     bootstrap();
 
     return () => {
+      setSocketSend(() => {});
       activeSocket?.close();
     };
-  }, [appendMessage, currentUser.id, initialize, setError, setSocketState, updateMessageStatus]);
+  }, [appendMessage, clearTyping, currentUser.id, initialize, setError, setSocketSend, setSocketState, setTyping, updateMessageStatus]);
 }

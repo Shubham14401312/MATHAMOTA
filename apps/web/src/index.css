@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-chat-bg: #efeae2;
-  --color-panel: #ffffff;
-  --color-panel-muted: #f0f2f5;
-  --color-sidebar: #f7f8fa;
-  --color-accent: #25d366;
-  --color-accent-dark: #1ea952;
-  --color-border-soft: #e9edef;
-  --color-message-sent: #d9fdd3;
-  --color-message-received: #ffffff;
-  --color-text-main: #111b21;
-  --color-text-muted: #667781;
-  --color-unread: #25d366;
-  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --color-chat-bg: #24070d;
+  --color-panel: rgba(255, 248, 249, 0.86);
+  --color-panel-muted: rgba(124, 22, 44, 0.1);
+  --color-sidebar: rgba(255, 241, 243, 0.8);
+  --color-accent: #9f1239;
+  --color-accent-dark: #7f1d1d;
+  --color-border-soft: rgba(127, 29, 29, 0.14);
+  --color-message-sent: rgba(159, 18, 57, 0.14);
+  --color-message-received: rgba(255, 255, 255, 0.75);
+  --color-text-main: #3f0b17;
+  --color-text-muted: #7a4450;
+  --color-unread: #be123c;
+  --font-sans: "SF Pro Text", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 html,
@@ -23,7 +23,12 @@ body,
 }
 
 body {
-  @apply bg-chat-bg font-sans text-text-main antialiased;
+  background:
+    radial-gradient(circle at top left, rgba(244, 114, 182, 0.22), transparent 28%),
+    radial-gradient(circle at top right, rgba(251, 113, 133, 0.2), transparent 24%),
+    radial-gradient(circle at bottom, rgba(190, 24, 93, 0.18), transparent 35%),
+    linear-gradient(160deg, #22070d 0%, #3b0918 48%, #2d0b14 100%);
+  @apply font-sans text-text-main antialiased;
 }
 
 ::-webkit-scrollbar {
@@ -32,18 +37,41 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-slate-300;
+  @apply rounded-full;
+  background: rgba(127, 29, 29, 0.28);
+}
+
+::selection {
+  background: rgba(190, 24, 93, 0.18);
 }
 
 .whatsapp-pattern {
-  background-color: #efeae2;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.2), transparent 28%),
+    linear-gradient(180deg, rgba(255, 246, 247, 0.18), rgba(255, 237, 240, 0.08)),
+    rgba(98, 18, 35, 0.14);
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.55) 1px, transparent 1px),
-    radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px);
-  background-position: 0 0, 12px 12px;
-  background-size: 24px 24px;
+    radial-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-position: 0 0, 16px 16px;
+  background-size: 32px 32px;
 }
 
 .emoji-font {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+
+.glass-surface {
+  background: rgba(255, 247, 248, 0.72);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow: 0 28px 80px rgba(60, 6, 24, 0.18);
+}
+
+.glass-strong {
+  background: rgba(255, 248, 249, 0.84);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  border: 1px solid rgba(255, 255, 255, 0.58);
 }
